@@ -12,23 +12,43 @@ program
   .command("getQuote")
   .description("Retrieves a random quote")
   .action(async () => {
-    // TODO: Pull a random quote from the quotes.txt file
+    try{
+    // Read text file
+    const data = await fs.readFile(`./${QUOTE_FILE}`, { encoding: 'utf-8' });
+   //split lines and filter empty lines 
+    const quotes = data.split('\n');
+    const nonEmptyQuotes = quotes.filter(quote => quote.trim() !== '');
+if (nonEmptyQuotes.length === 0) {
+  console.log(chalk.red.italic("No quotes found"));
+  return;
+}
+    // select random quote
+    const randomQuote = nonEmptyQuotes[Math.floor(Math.random() *nonEmptyQuotes.length)];
+    //split the author
+    const [quote, author] = randomQuote.split('|');
     // console log the quote and author
-    // You may style the text with chalk as you wish
+    console.log(chalk.grey.bold(quote.trim()));
+    console.log(chalk.grey.italic('by'), chalk.grey.italic(author || "Anonymous"));
+  } catch (err) {
+    console.error(chalk.red.italic("Error", err.message));
+    }
   });
 
 program
   .command("addQuote <quote> [author]")
   .description("adds a quote to the quote file")
   .action(async (quote, author) => {
-    // TODO: Add the quote and author to the quotes.txt file
-    // If no author is provided,
-    // save the author as "Anonymous".
-    // After the quote/author is saved,
+    try {
+    // Add the quote and author to the quotes file
+    // If no author is provided, save the author as "Anonymous".
+    const newQuote = `${quote.trim()} | ${author} || "Anonymous"`;
+    //add the new quote to file
+    await fs.appendFile(QUOTE_FILE, newQuote + `\n`);
     // alert the user that the quote was added.
-    // You may style the text with chalk as you wish
-    // HINT: You can store both author and quote on the same line using
-    // a separator like pipe | and then using .split() when retrieving
+    console.log(chalk.grey.italic('Quote added to file!'));
+    } catch (err) {
+    console.error(chalk.red.italic("Error, try again!", err.message));
+    }
   });
 
 program.parse();
